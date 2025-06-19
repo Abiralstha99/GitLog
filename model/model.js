@@ -2,6 +2,7 @@ import express from 'express';
 import 'dotenv/config.js';
 import { Client } from 'pg';
 
+const app = express();
 const db = new Client({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
@@ -10,4 +11,5 @@ const db = new Client({
   port: process.env.DB_PORT,
 });
 
-db.connect();
+db.connect()
+export default db;
