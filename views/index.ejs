@@ -8,16 +8,19 @@
   <body>
     <h1>Book Notes</h1>
 
+      <!-- If there are no books in the array, show a simple message -->
     <% if (books.length === 0) { %>
     <p>No books to display</p>
     <% } else { %> <% books.forEach(book => { %>
     <div class="book">
+     <!-- If the book has a cover ID, show the cover image from Open Library -->
       <% if (book.cover_id) { %>
       <img
         src="https://covers.openlibrary.org/b/id/<%= book.cover_id %>-M.jpg"
         alt="Book Cover"
       />
       <% } %>
+       <!-- Book details section -->
       <div class="info">
         <h2><%= book.title %></h2>
         <p><strong>Author:</strong> <%= book.author || 'Unknown' %></p>
