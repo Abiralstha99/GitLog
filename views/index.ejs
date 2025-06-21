@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Book Log</title>
+  </head>
+  <body>
+    <h1>Book Notes</h1>
+
+    <% if (books.length === 0) { %>
+    <p>No books to display</p>
+    <% } else { %> <% books.forEach(book => { %>
+    <div class="book">
+      <% if (book.cover_id) { %>
+      <img
+        src="https://covers.openlibrary.org/b/id/<%= book.cover_id %>-M.jpg"
+        alt="Book Cover"
+      />
+      <% } %>
+      <div class="info">
+        <h2><%= book.title %></h2>
+        <p><strong>Author:</strong> <%= book.author || 'Unknown' %></p>
+        <% if (book.rating) { %>
+        <p><strong>Rating:</strong> <%= book.rating %></p>
+        <% } %> <% if (book.read_date) { %>
+        <p><strong>Read on:</strong> <%= new Date(book.read_date).toDateString() %></p>
+        <% } %>
+      </div>
+    </div>
+    <% }) %> <% } %>
+  </body>
+</html>
