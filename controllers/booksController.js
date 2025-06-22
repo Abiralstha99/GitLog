@@ -28,9 +28,19 @@ async function postBook(req, res) {
       "INSERT INTO books (title, author, rating, read_date, notes, cover_id) VALUES ($1, $2, $3, $4, $5, $6)",
       [title, author, rating, read_date, notes, cover_id]
     );
-    res.redirect('/');
+    res.redirect("/");
   } catch (error) {
     res.status(500).send("Error");
   }
 }
-export { getBooks, renderNewForm, postBook };
+
+async function deleteBook(req, res) {
+  try {
+    const id = req.params.id;
+    await db.query("DELETE FROM books WHERE id = $1", [id]);
+    res.redirect("/");
+  } catch (error) {
+    res.status(500).send("Error");
+  }
+}
+export { getBooks, renderNewForm, postBook, deleteBook };
