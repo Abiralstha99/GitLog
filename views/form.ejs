@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Book Form</title>
+  </head>
+  <body>
+    <h1>Add a New Book</h1>
+    <form action="/new" method="post">
+      <label for="title">Title:</label><br />
+      <input type="text" id="title" name="title" required /><br />
+
+      <label for="author">Author:</label><br />
+      <input type="text" id="author" name="author" /><br />
+
+      <label for="rating">Rating:</label><br />
+      <select id="rating" name="rating">
+        <option value="">--Select--</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select><br />
+
+      <label for="read_date">Read Date:</label><br />
+      <input type="date" id="read_date" name="read_date" /><br />
+
+      <label for="notes">Notes:</label><br />
+      <textarea id="notes" name="notes" rows="5" cols="30"></textarea><br />
+
+      <label for="cover_id">Cover ID:</label><br />
+      <input type="text" name="cover_id" placeholder="Open Library cover ID" /><br />
+
+      <br />
+      <button type="submit">Add Book</button>
+    </form>
+  </body>
+</html>

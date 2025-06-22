@@ -10,5 +10,11 @@ async function getBooks(req,res){
     }
 }
 
-
-export { getBooks };
+async function renderNewForm(req,res) {
+    try {
+        res.render("form")
+    } catch (error) {
+        res.status(500).send("Error")
+    }
+}
+export { getBooks, renderNewForm};
