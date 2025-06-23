@@ -46,21 +46,20 @@ async function deleteBook(req, res) {
 
 async function renderCurrentForm(req, res) {
   try {
-    currentBookId = req.params.id;
-    const data = await db.query("SELECT * FROM books where id = $1", [
-      currentBookId,
-    ]);
-    // Extracting the book data cause the data contains additional info related to the row in our database
+    const currentBookId = req.params.id;
+    const data = await db.query("SELECT * FROM books WHERE id = $1", [currentBookId]);
     const book = data.rows[0];
+
     if (!book) {
       return res.status(404).send("Book not found");
     }
-    // Render the edit form, passing the book data
+
     res.render("edit", { book });
   } catch (error) {
-    res.status(500).send("Error");
+    res.status(500).send("Error rendering edit form");
   }
 }
+
 
 async function updateBook(req, res) {
   try {
