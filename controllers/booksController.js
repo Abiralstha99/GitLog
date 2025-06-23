@@ -43,4 +43,37 @@ async function deleteBook(req, res) {
     res.status(500).send("Error");
   }
 }
-export { getBooks, renderNewForm, postBook, deleteBook };
+
+async function renderCurrentForm(req, res) {
+  try {
+    currentBookId = req.params.id;
+    const data = await db.query("SELECT * FROM books where id = $1", [
+      currentBookId,
+    ]);
+    // Extracting the book data cause the data contains additional info related to the row in our database
+    const book = data.rows[0];
+    if (!book) {
+      return res.status(404).send("Book not found");
+    }
+    // Render the edit form, passing the book data
+    res.render("edit", { book });
+  } catch (error) {
+    res.status(500).send("Error");
+  }
+}
+
+async function updateBook(req, res) {
+  try {
+    const id = req.params.id;
+    const { title, author, rating, read_date, notes, cover_id } = req.body;
+    // Extracting the book data cause the data contains additional info related to the row in our database
+    await db.query(
+      "UPDATE books SET title = $1, author = $2, rating = $3, read_date = $4, notes = $5, cover_id = $6 WHERE id = $7",
+      [title, author, rating, read_date, notes, cover_id, id]
+    );
+    res.redirect("/");
+  } catch (error) {
+    res.status(500).send("Error");
+  }
+}
+export { getBooks, renderNewForm, postBook, deleteBook, renderCurrentForm, updateBook };
