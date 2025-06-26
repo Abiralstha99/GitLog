@@ -1,37 +1,45 @@
 .book {
-        display: flex;
-        gap: 1rem;
-        background: var(--card-background-color);
-        padding: 1rem;
-        margin-bottom: 1rem;
-        border-radius: 0.5rem;
-        align-items: center;
-      }
+  display: flex;
+  gap: 1rem;
+  background: var(--card-background-color);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 0.5rem;
+  align-items: center;
+}
 
-      .book img {
-        height: 120px;
-        border-radius: 4px;
-      }
+.book img {
+  height: 120px;
+  border-radius: 4px;
+}
 
-      .info {
-        flex: 1;
-      }
+.info {
+  flex: 1;
+}
 
-      .add-book-container {
-        text-align: right;
-        margin-bottom: 2rem;
-      }
+.action-book-container {
+  text-align: right;
+  margin-bottom: 2rem;
+}
 
-      .add-book-button {
-        background-color: var(--primary);
-        color: white;
-      }
+.action-book-button {
+  background-color: var(--primary);
+  color: white;
+  transition: background-color 0.3s ease;
+}
 
-      .add-book-button:hover {
-        background-color: var(--primary-hover);
-      }
+.action-book-button:hover {
+  background-color: var(--primary-hover);
+}
 
-      form {
-        display: inline;
-        margin-right: 0.5rem;
-      }
+form {
+  display: inline;
+  margin-right: 0.5rem;
+}
+
+.delete-button {
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  min-width: auto;
+  width: auto;
+}
