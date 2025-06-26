@@ -4,10 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Book Log</title>
+    <link rel="stylesheet" href="/style.css" />
   </head>
 
   <body>
     <h1>Book Notes</h1>
+    <div class="add-book-container">
+      <a href="/new">
+        <button class="add-book-button">Add New Book</button>
+      </a>
+    </div>
 
     <!-- If there are no books in the array, show a simple message -->
     <% if (books.length===0) { %>
