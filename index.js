@@ -1,7 +1,7 @@
 import express from 'express';
 import 'dotenv/config.js';
-import { Client } from 'pg';
 import booksRouter from './routes/booksRouter.js';
+import pool from './model/model.js';
 
 const app = express();
 const PORT = 3000;
