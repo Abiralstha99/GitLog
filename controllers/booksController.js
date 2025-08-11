@@ -1,12 +1,13 @@
-import db from "../model/model.js";
+import pool from "../model/model.js";
 
 async function getBooks(req, res) {
   try {
-    const result = await db.query("SELECT * from books ");
+    const result = await pool.query("SELECT * from books ");
     const books = result.rows;
     res.render("index", { books });
   } catch (error) {
-    res.status(500).send("Error");
+    console.error("Error fetching books:", error);
+    res.status(500).send("Sorry, we couldn't load your book list. Please try again later.");
   }
 }
 
@@ -14,7 +15,8 @@ async function renderNewForm(req, res) {
   try {
     res.render("form");
   } catch (error) {
-    res.status(500).send("Error");
+    console.error("Error rendering new book form:", error);
+    res.status(500).send("Sorry, we couldn't display the new book form. Please try again.");
   }
 }
 
@@ -24,30 +26,32 @@ async function postBook(req, res) {
     if (!title) {
       return res.status(400).send("Book title is required");
     }
-    await db.query(
+    await pool.query(
       "INSERT INTO books (title, author, rating, read_date, notes, cover_id) VALUES ($1, $2, $3, $4, $5, $6)",
       [title, author, rating, read_date, notes, cover_id]
     );
     res.redirect("/");
   } catch (error) {
-    res.status(500).send("Error");
+    console.error("Error adding new book:", error);
+    res.status(500).send("Sorry, we couldn't add your book. Please try again.");
   }
 }
 
 async function deleteBook(req, res) {
   try {
     const id = req.params.id;
-    await db.query("DELETE FROM books WHERE id = $1", [id]);
+    await pool.query("DELETE FROM books WHERE id = $1", [id]);
     res.redirect("/");
   } catch (error) {
-    res.status(500).send("Error");
+    console.error(`Error deleting book with ID ${req.params.id}:`, error);
+    res.status(500).send("Sorry, we couldn't delete this book. Please try again.");
   }
 }
 
 async function renderCurrentForm(req, res) {
   try {
     const currentBookId = req.params.id;
-    const data = await db.query("SELECT * FROM books WHERE id = $1", [currentBookId]);
+    const data = await pool.query("SELECT * FROM books WHERE id = $1", [currentBookId]);
     const book = data.rows[0];
 
     if (!book) {
@@ -56,7 +60,8 @@ async function renderCurrentForm(req, res) {
 
     res.render("edit", { book });
   } catch (error) {
-    res.status(500).send("Error rendering edit form");
+    console.error(`Error rendering edit form for book ID ${req.params.id}:`, error);
+    res.status(500).send("Sorry, we couldn't display the edit form. Please try again.");
   }
 }
 
@@ -66,13 +71,14 @@ async function updateBook(req, res) {
     const id = req.params.id;
     const { title, author, rating, read_date, notes, cover_id } = req.body;
     // Extracting the book data cause the data contains additional info related to the row in our database
-    await db.query(
+    await pool.query(
       "UPDATE books SET title = $1, author = $2, rating = $3, read_date = $4, notes = $5, cover_id = $6 WHERE id = $7",
       [title, author, rating, read_date, notes, cover_id, id]
     );
     res.redirect("/");
   } catch (error) {
-    res.status(500).send("Error");
+    console.error(`Error updating book with ID ${req.params.id}:`, error);
+    res.status(500).send("Sorry, we couldn't update this book. Please try again.");
   }
 }
 export { getBooks, renderNewForm, postBook, deleteBook, renderCurrentForm, updateBook };

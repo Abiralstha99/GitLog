@@ -2,8 +2,6 @@ import express from 'express';
 import 'dotenv/config.js';
 import { Pool } from 'pg';
 
-const app = express();
-
 const pool = new Pool ({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
