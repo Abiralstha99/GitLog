@@ -10,9 +10,19 @@
 
   <body class="bg-gray-50 text-gray-900 antialiased">
     <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-      <div class="flex items-center justify-between gap-4">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 class="text-3xl font-bold tracking-tight">Book Notes</h1>
-        <div>
+        <div class="w-full sm:w-auto flex items-center gap-3">
+          <div class="relative flex-1 sm:min-w-[320px]">
+            <label for="search" class="sr-only">Search books</label>
+            <input
+              id="search"
+              type="text"
+              placeholder="Search by title or author..."
+              class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              oninput="filterBooks(event)"
+            />
+          </div>
           <a href="/new" class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition">
             Add New Book
           </a>
@@ -25,39 +35,66 @@
           <p class="text-gray-600">No books to display</p>
         <% } else { %>
           <!-- Responsive grid of book cards -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div id="booksGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             <!-- Loop through each book -->
             <% books.forEach(book => { %>
-              <article class="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition overflow-hidden">
+              <article
+                class="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition overflow-hidden h-full flex flex-col"
+                data-title="<%= (book.title || '').toLowerCase() %>"
+                data-author="<%= ((book.author || book.authors || 'unknown').toString()).toLowerCase() %>"
+              >
                 <div class="flex gap-4 p-4">
-                  <!-- Show book cover if available -->
-                  <% if (book.cover_id) { %>
+                  <!-- Book cover: prefer coverUrl, then Open Library cover_id, else placeholder -->
+                  <% if (book.coverUrl) { %>
                     <img
-                      src="https://covers.openlibrary.org/b/id/<%= book.cover_id %>-M.jpg"
-                      alt="Book Cover"
-                      class="h-28 w-20 sm:h-32 sm:w-24 object-cover rounded-md flex-none"
+                      src="<%= book.coverUrl %>"
+                      alt="Cover of <%= book.title || 'Untitled' %>"
+                      class="h-28 w-20 sm:h-32 sm:w-24 object-cover rounded-md flex-none bg-gray-100"
                       loading="lazy"
                     />
+                  <% } else if (book.cover_id) { %>
+                    <img
+                      src="https://covers.openlibrary.org/b/id/<%= book.cover_id %>-M.jpg"
+                      alt="Cover of <%= book.title || 'Untitled' %>"
+                      class="h-28 w-20 sm:h-32 sm:w-24 object-cover rounded-md flex-none bg-gray-100"
+                      loading="lazy"
+                    />
+                  <% } else { %>
+                    <div class="h-28 w-20 sm:h-32 sm:w-24 rounded-md flex-none bg-gray-200 grid place-items-center text-gray-500 text-xs">
+                      No Cover
+                    </div>
                   <% } %>
 
                   <!-- Book information -->
-                  <div class="min-w-0 flex-1">
-                    <h2 class="text-lg font-semibold leading-snug truncate"><%= book.title %></h2>
-                    <p class="mt-1 text-sm text-gray-600"><span class="font-medium">Author:</span> <%= book.author || 'Unknown' %></p>
+                  <div class="min-w-0 flex-1 flex flex-col">
+                    <h2 class="text-lg font-semibold leading-snug truncate" title="<%= book.title %>"><%= book.title || 'Untitled' %></h2
+                    <p class="mt-1 text-sm text-gray-600">
+                      <span class="font-medium">Author:</span>
+                      <%= book.author || 'Unknown' %>
+                    </p>
 
-                    <% if (book.rating) { %>
-                      <p class="mt-1 text-sm text-gray-600"><span class="font-medium">Rating:</span> <%= book.rating %></p>
-                    <% } %>
+                    <!-- Star rating (1–5) -->
+                    <div class="mt-1 text-sm" aria-label="Rating: <%= +book.rating || 0 %> out of 5">
+                      <% const r = Math.max(0, Math.min(5, +book.rating || 0)); %>
+                      <% for (let i = 1; i <= 5; i++) { %>
+                        <span class="<%= i <= r ? 'text-yellow-500' : 'text-gray-300' %>">★</span>
+                      <% } %>
+                      <% if (r) { %>
+                        <span class="ml-1 text-gray-600 align-middle text-xs">(<%= r %>/5)</span>
+                      <% } %>
+                    </div>
 
-                    <% if (book.read_date) { %>
-                      <p class="mt-1 text-sm text-gray-600">
-                        <span class="font-medium">Read on:</span>
-                        <%= new Date(book.read_date).toDateString() %>
-                      </p>
+                    <!-- Notes/description (truncate long text) -->
+                    <% if (book.notes) { %>
+                      <% const note = String(book.notes); const short = note.length > 50 ? note.slice(0, 50) + '...' : note; %>
+                      <p class="mt-2 text-sm text-gray-700 break-words"><%= short %></p>
                     <% } %>
 
                     <!-- Actions -->
-                    <div class="mt-4 flex flex-wrap items-center gap-2">
+                    <div class="mt-auto flex flex-wrap items-center gap-2">
+                      <a href="/edit/<%= book.id %>" class="inline-flex items-center rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-gray-900 border border-gray-300 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition">
+                        Edit
+                      </a>
                       <form
                         action="/delete/<%= book.id %>"
                         method="POST"
@@ -68,10 +105,6 @@
                           Delete
                         </button>
                       </form>
-
-                      <a href="/edit/<%= book.id %>" class="inline-flex items-center rounded-md bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-900 shadow-sm hover:bg-gray-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-300 transition">
-                        Edit
-                      </a>
                     </div>
                   </div>
                 </div>
@@ -81,5 +114,22 @@
         <% } %>
       </div>
     </main>
+
+    <script>
+      function filterBooks(e) {
+        const q = (e?.target?.value || '').toLowerCase().trim();
+        const cards = document.querySelectorAll('#booksGrid article');
+        if (!q) {
+          cards.forEach(c => { c.classList.remove('hidden'); });
+          return;
+        }
+        cards.forEach(c => {
+          const title = c.getAttribute('data-title') || '';
+          const author = c.getAttribute('data-author') || '';
+          const match = title.includes(q) || author.includes(q);
+          c.classList.toggle('hidden', !match);
+        });
+      }
+    </script>
   </body>
 </html>
