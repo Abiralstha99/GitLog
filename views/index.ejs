@@ -4,73 +4,82 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Book Log</title>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"
-    />
-    <link rel="stylesheet" href="/style.css" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
     <link rel="stylesheet" href="/style.css" />
   </head>
 
-  <body>
-    <main class="container">
-      <h1>Book Notes</h1>
-
-      <div class="action-book-container">
-        <a href="/new">
-          <button class="action-book-button">Add New Book</button>
-        </a>
+  <body class="bg-gray-50 text-gray-900 antialiased">
+    <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <div class="flex items-center justify-between gap-4">
+        <h1 class="text-3xl font-bold tracking-tight">Book Notes</h1>
+        <div>
+          <a href="/new" class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition">
+            Add New Book
+          </a>
+        </div>
       </div>
 
-      <!-- If there are no books in the array, show a simple message -->
-      <% if (books.length === 0) { %>
-        <p>No books to display</p>
-      <% } else { %>
+      <div class="mt-8">
+        <!-- If there are no books in the array, show a simple message -->
+        <% if (books.length === 0) { %>
+          <p class="text-gray-600">No books to display</p>
+        <% } else { %>
+          <!-- Responsive grid of book cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- Loop through each book -->
+            <% books.forEach(book => { %>
+              <article class="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition overflow-hidden">
+                <div class="flex gap-4 p-4">
+                  <!-- Show book cover if available -->
+                  <% if (book.cover_id) { %>
+                    <img
+                      src="https://covers.openlibrary.org/b/id/<%= book.cover_id %>-M.jpg"
+                      alt="Book Cover"
+                      class="h-28 w-20 sm:h-32 sm:w-24 object-cover rounded-md flex-none"
+                      loading="lazy"
+                    />
+                  <% } %>
 
-        <!-- Loop through each book -->
-        <% books.forEach(book => { %>
-          <div class="book">
+                  <!-- Book information -->
+                  <div class="min-w-0 flex-1">
+                    <h2 class="text-lg font-semibold leading-snug truncate"><%= book.title %></h2>
+                    <p class="mt-1 text-sm text-gray-600"><span class="font-medium">Author:</span> <%= book.author || 'Unknown' %></p>
 
-            <!-- Show book cover if available -->
-            <% if (book.cover_id) { %>
-              <img
-                src="https://covers.openlibrary.org/b/id/<%= book.cover_id %>-M.jpg"
-                alt="Book Cover"
-              />
-            <% } %>
+                    <% if (book.rating) { %>
+                      <p class="mt-1 text-sm text-gray-600"><span class="font-medium">Rating:</span> <%= book.rating %></p>
+                    <% } %>
 
-            <!-- Book information -->
-            <div class="info">
-              <h2><%= book.title %></h2>
-              <p><strong>Author:</strong> <%= book.author || 'Unknown' %></p>
+                    <% if (book.read_date) { %>
+                      <p class="mt-1 text-sm text-gray-600">
+                        <span class="font-medium">Read on:</span>
+                        <%= new Date(book.read_date).toDateString() %>
+                      </p>
+                    <% } %>
 
-              <% if (book.rating) { %>
-                <p><strong>Rating:</strong> <%= book.rating %></p>
-              <% } %>
+                    <!-- Actions -->
+                    <div class="mt-4 flex flex-wrap items-center gap-2">
+                      <form
+                        action="/delete/<%= book.id %>"
+                        method="POST"
+                        onsubmit="return confirm('Are you sure you want to delete this book?');"
+                        class="inline"
+                      >
+                        <button type="submit" class="inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 transition">
+                          Delete
+                        </button>
+                      </form>
 
-              <% if (book.read_date) { %>
-                <p>
-                  <strong>Read on:</strong>
-                  <%= new Date(book.read_date).toDateString() %>
-                </p>
-              <% } %>
-
-              <!-- A Delete form with confirmation -->
-              <form
-                action="/delete/<%= book.id %>"
-                method="POST"
-                onsubmit="return confirm('Are you sure you want to delete this book?');"
-              >
-                <button type="submit" class="action-book-button">Delete</button>
-              </form>
-
-              <a href="/edit/<%= book.id %>">
-                 <button class="action-book-button">Edit</button>
-              </a>
-            </div>
+                      <a href="/edit/<%= book.id %>" class="inline-flex items-center rounded-md bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-900 shadow-sm hover:bg-gray-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-300 transition">
+                        Edit
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            <% }) %>
           </div>
-        <% }) %>
-      <% } %>
+        <% } %>
+      </div>
     </main>
   </body>
 </html>
