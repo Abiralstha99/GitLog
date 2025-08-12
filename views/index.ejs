@@ -20,7 +20,7 @@
               type="text"
               placeholder="Search by title or author..."
               class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              oninput="filterBooks(event)"
+              oninput="searchBook(event)"
             />
           </div>
           <a href="/new" class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition">
@@ -116,20 +116,18 @@
     </main>
 
     <script>
-      function filterBooks(e) {
-        const q = (e?.target?.value || '').toLowerCase().trim();
-        const cards = document.querySelectorAll('#booksGrid article');
-        if (!q) {
-          cards.forEach(c => { c.classList.remove('hidden'); });
-          return;
-        }
-        cards.forEach(c => {
-          const title = c.getAttribute('data-title') || '';
-          const author = c.getAttribute('data-author') || '';
-          const match = title.includes(q) || author.includes(q);
-          c.classList.toggle('hidden', !match);
-        });
-      }
+
+function searchBook(e){
+  const value = e.target.value.toLowerCase().trim()
+  const cards = document.querySelectorAll('#booksGrid article');
+  cards.forEach(card => {
+    const title = card.getAttribute('data-title') || '';
+    const author = card.getAttribute('data-author') || '';
+    const isVisible = title.toLowerCase().includes(value) || author.toLowerCase().includes(value);
+    card.classList.toggle('hidden', !isVisible);
+  })
+
+}
     </script>
   </body>
 </html>
