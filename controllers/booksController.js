@@ -30,7 +30,8 @@ async function postBook(req, res) {
       "INSERT INTO books (title, author, rating, read_date, notes, cover_id) VALUES ($1, $2, $3, $4, $5, $6)",
       [title, author, rating, read_date, notes, cover_id]
     );
-    res.redirect("/");
+    req.flash('success', 'Book added successfully!');
+    res.redirect('/');
   } catch (error) {
     console.error("Error adding new book:", error);
     res.status(500).send("Sorry, we couldn't add your book. Please try again.");
@@ -41,7 +42,8 @@ async function deleteBook(req, res) {
   try {
     const id = req.params.id;
     await pool.query("DELETE FROM books WHERE id = $1", [id]);
-    res.redirect("/");
+    req.flash('error', 'Book deleted successfully!');
+    res.redirect('/');
   } catch (error) {
     console.error(`Error deleting book with ID ${req.params.id}:`, error);
     res.status(500).send("Sorry, we couldn't delete this book. Please try again.");
