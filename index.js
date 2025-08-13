@@ -1,7 +1,8 @@
 import express from 'express';
 import 'dotenv/config.js';
 import booksRouter from './routes/booksRouter.js';
-import pool from './model/model.js';
+import session from 'express-session';
+import flash from 'connect-flash';
 
 const app = express();
 const PORT = 3000;
@@ -12,6 +13,21 @@ app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use(express.static("public"));
 
+//flash middlewire to display message when user made changes 
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false
+}))
+
+// now after I entered the session using secret now I can use flash
+app.use(flash());
+
+
+app.use((req, res, next) => {
+  res.locals.flash = req.flash();
+  next();
+});
 // routes
 console.log({
   user: process.env.DB_USER,
