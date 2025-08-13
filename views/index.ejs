@@ -10,6 +10,16 @@
 
   <body class="bg-gray-50 text-gray-900 antialiased">
     <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <% if (flash.success && flash.success.length) { %>
+        <div id="flash-success" class="mb-4 rounded bg-green-100 border border-green-300 px-4 py-2 text-green-800">
+          <%= flash.success[0] %>
+        </div>
+      <% } %>
+      <% if (flash.error && flash.error.length) { %>
+        <div id="flash-error" class="mb-4 rounded bg-red-100 border border-red-300 px-4 py-2 text-red-800">
+          <%= flash.error[0] %>
+        </div>
+      <% } %>
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 class="text-3xl font-bold tracking-tight">Book Notes</h1>
         <div class="w-full sm:w-auto flex items-center gap-3">
@@ -35,78 +45,62 @@
           <p class="text-gray-600">No books to display</p>
         <% } else { %>
           <!-- Responsive grid of book cards -->
-          <div id="booksGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            <!-- Loop through each book -->
+          <div id="booksGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 items-stretch gap-6"
+            >
             <% books.forEach(book => { %>
               <article
-                class="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md focus-within:shadow-md transition overflow-hidden h-full flex flex-col"
+                class="group relative bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md focus-within:shadow-md transition overflow-hidden h-[28rem] sm:h-[30rem] lg:h-[32rem] flex flex-col"
                 data-title="<%= (book.title || '').toLowerCase() %>"
                 data-author="<%= ((book.author || book.authors || 'unknown').toString()).toLowerCase() %>"
                 role="article"
                 aria-label="Book card: <%= book.title || 'Untitled' %>"
               >
-                <div class="flex gap-4 p-4">
-                  <!-- Book cover: prefer coverUrl, then Open Library cover_id, else placeholder -->
+                <!-- Media/top cover area with fixed height -->
+                <div class="relative h-48 sm:h-56 bg-gray-100">
                   <% if (book.coverUrl) { %>
-                    <img
-                      src="<%= book.coverUrl %>"
-                      alt="Cover of <%= book.title || 'Untitled' %>"
-                      class="h-28 w-20 sm:h-32 sm:w-24 object-cover rounded-md flex-none bg-gray-100"
-                      loading="lazy"
-                    />
+                    <img src="<%= book.coverUrl %>" alt="Cover of <%= book.title || 'Untitled' %>" class="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                   <% } else if (book.cover_id) { %>
-                    <img
-                      src="https://covers.openlibrary.org/b/id/<%= book.cover_id %>-M.jpg"
-                      alt="Cover of <%= book.title || 'Untitled' %>"
-                      class="h-28 w-20 sm:h-32 sm:w-24 object-cover rounded-md flex-none bg-gray-100"
-                      loading="lazy"
-                    />
+                    <img src="https://covers.openlibrary.org/b/id/<%= book.cover_id %>-L.jpg" alt="Cover of <%= book.title || 'Untitled' %>" class="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                   <% } else { %>
-                    <div class="h-28 w-20 sm:h-32 sm:w-24 rounded-md flex-none bg-gray-200 grid place-items-center text-gray-500 text-xs">
-                      No Cover
+                    <div class="absolute inset-0 grid place-items-center text-gray-400">
+                      <span class="text-sm">No Cover</span>
                     </div>
                   <% } %>
+                </div>
 
-                  <!-- Book information -->
-                  <div class="min-w-0 flex-1 flex flex-col">
-                    <h2 class="text-lg font-semibold leading-snug truncate" title="<%= book.title %>"><%= book.title || 'Untitled' %></h2
-                    <p class="mt-1 text-sm text-gray-600">
-                      <span class="font-medium">Author:</span>
-                      <%= book.author || 'Unknown' %>
-                    </p>
+                <!-- Content area -->
+                <div class="flex-1 p-5 flex flex-col">
+                  <h2 class="text-xl font-semibold leading-snug" title="<%= book.title %>"><%= book.title || 'Untitled' %></h2>
+                  <p class="mt-1 text-sm text-gray-600">by <span class="font-medium"><%= book.author || 'Unknown' %></span></p>
 
-                    <!-- Star rating (1–5) -->
-                    <div class="mt-1 text-sm" aria-label="Rating: <%= +book.rating || 0 %> out of 5">
+                  <% if (book.notes) { %>
+                    <% const note = String(book.notes); %>
+                    <p class="mt-3 text-base italic text-gray-800 break-words line-clamp-3"><%= note %></p>
+                  <% } %>
+
+                  <div class="mt-auto flex items-center justify-between text-sm text-gray-700">
+                    <div aria-label="Rating: <%= +book.rating || 0 %> out of 5">
                       <% const r = Math.max(0, Math.min(5, +book.rating || 0)); %>
-                      <% for (let i = 1; i <= 5; i++) { %>
-                        <span class="<%= i <= r ? 'text-yellow-500' : 'text-gray-300' %>">★</span>
-                      <% } %>
-                      <% if (r) { %>
-                        <span class="ml-1 text-gray-600 align-middle text-xs">(<%= r %>/5)</span>
-                      <% } %>
+                      <span class="align-middle text-yellow-500">★</span> <span><%= r || 0 %>/5</span>
                     </div>
-
-                    <!-- Notes/description (truncate long text) -->
-                    <% if (book.notes) { %>
-                      <% const note = String(book.notes); const short = note.length > 50 ? note.slice(0, 50) + '...' : note; %>
-                      <p class="mt-2 text-sm text-gray-700 break-words"><%= short %></p>
+                    <% const date = book.date || book.date_read || book.readDate || book.created_at || book.createdAt; %>
+                    <% if (date) { %>
+                      <div class="flex items-center gap-1 text-gray-600">
+                        <span aria-hidden="true">📅</span>
+                        <span><%= new Date(date).toLocaleDateString() %></span>
+                      </div>
                     <% } %>
+                  </div>
+                </div>
 
-                    <!-- Actions -->
-                    <div class="mt-auto flex flex-wrap items-center gap-2">
-                      <a href="/edit/<%= book.id %>" class="inline-flex items-center rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-gray-900 border border-gray-300 shadow-sm hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition" aria-label="Edit <%= book.title || 'this book' %>" title="Edit">
-                        Edit
-                      </a>
-                      <form
-                        action="/delete/<%= book.id %>"
-                        method="POST"
-                        onsubmit="return confirm('Are you sure you want to delete this book?');"
-                        class="inline"
-                        aria-label="Delete <%= book.title || 'this book' %>"
-                      >
-                        <button type="submit" class="inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 transition" title="Delete">
-                          Delete
-                        </button>
+                <!-- Hover overlay with actions -->
+                <div class="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition">
+                  <div class="pointer-events-auto text-center">
+                    <p class="mb-3 text-white font-semibold tracking-wide">More details</p>
+                    <div class="flex items-center justify-center gap-3">
+                      <a href="/edit/<%= book.id %>" class="inline-flex items-center rounded-md bg-white/90 px-4 py-1.5 text-xs font-semibold text-gray-900 shadow hover:bg-white" aria-label="Edit <%= book.title || 'this book' %>" title="Edit">Edit</a>
+                      <form action="/delete/<%= book.id %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this book?');" class="inline">
+                        <button type="submit" class="inline-flex items-center rounded-md bg-red-600 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-red-500" title="Delete">Delete</button>
                       </form>
                     </div>
                   </div>
@@ -129,8 +123,27 @@ function searchBook(e){
     const isVisible = title.toLowerCase().includes(value) || author.toLowerCase().includes(value);
     card.classList.toggle('hidden', !isVisible);
   })
-
 }
+
+// adding a transition for the flash message
+  setTimeout(() => {
+  const success = document.getElementById('flash-success');
+  const error = document.getElementById('flash-error');
+  if (success) {
+    success.classList.add('transition-opacity', 'duration-700');
+    success.style.opacity = '0';
+    setTimeout(() => {
+      success.style.display = 'none';
+    }, 700); 
+  }
+  if (error) {
+    error.classList.add('transition-opacity', 'duration-700');
+    error.style.opacity = '0';
+    setTimeout(() => {
+      error.style.display = 'none';
+    }, 700); 
+  }
+}, 5000); // Start fade-out after 5 seconds 
     </script>
   </body>
 </html>
