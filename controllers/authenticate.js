@@ -2,15 +2,29 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import pool from '../model/model.js';
 
-async function login(req,res) {
-    try {
+async function login(req, res) {
+  try {
     const { username, password } = req.body;
-    const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+    if (!username || !password) {
+      req.flash('error', 'Username and password are required.');
+      return res.redirect('/login');
+    }
+    const uname = username.trim().toLowerCase();
+    const result = await pool.query(
+      'SELECT * FROM users WHERE LOWER(username) = $1 LIMIT 1',
+      [uname]
+    );
     const user = result.rows[0];
-    if (!user) return res.status(401).json({ error: 'Invalid username or password.' });
+    if (!user) {
+      req.flash('error', 'Invalid username or password.');
+      return res.redirect('/login');
+    }
 
     const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(401).json({ error: 'Invalid username or password.' });
+    if (!match) {
+      req.flash('error', 'Invalid username or password.');
+      return res.redirect('/login');
+    }
 
     const token = jwt.sign(
       { id: user.id, username: user.username },
@@ -19,34 +33,47 @@ async function login(req,res) {
     );
 
     res.cookie('token', token, {
-      httpOnly: true,
+      httpOnly: true, // not accessible via JS
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 2 * 60 * 60 * 1000 // 2h
+      maxAge: 2 * 60 * 60 * 1000, // 2h
     });
 
     res.redirect('/');
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Login failed.' });
+    req.flash('error', 'Login failed. Please try again.');
+    res.redirect('/login');
   }
 }
 
-async function authenticateJWT(req,res,next) {
-    const authHeader = req.headers.authorization;
-    const headerToken = authHeader.split(' ')[1];
-    const cookieToken = req.cookies?.token;
-    const token = cookieToken || headerToken;
-    if (!token) {
-        return res.status(401).json({ error: 'No token provided.' });
-    }
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err,user) => {
-        if (err){
-            return res.status(403).json({error: 'Invalid or expired token.'});
-        }
-        req.user = user;
-        next();
-    })
+async function logout(req, res) {
+  res.clearCookie('token', {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+  });
+  req.flash('success', 'Logged out.');
+  res.redirect('/');
 }
 
-export {login, authenticateJWT};
+async function authenticateJWT(req, res, next) {
+  const headerToken = req.headers.authorization?.split(' ')[1];
+  const cookieToken = req.cookies?.token;
+  const token = cookieToken || headerToken;
+  if (!token) {
+    // For SSR flows, redirect with flash
+    req.flash('error', 'Please log in to continue.');
+    return res.redirect('/login');
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+    if (err) {
+      req.flash('error', 'Your session has expired. Please log in again.');
+      return res.redirect('/login');
+    }
+    req.user = user;
+    next();
+  });
+}
+
+export { login, logout, authenticateJWT };
