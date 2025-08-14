@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign up • My Book Log</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body class="bg-gray-50 text-gray-900 antialiased">
+    <% 
+      // Normalize validation errors (supports express-validator style)
+      const errs = (typeof errors !== 'undefined' && errors)
+        ? (Array.isArray(errors) ? errors : (errors.errors || []))
+        : [];
+      const errMap = {};
+      (errs || []).forEach(e => { if (e && e.param) errMap[e.param] = e.msg || 'Invalid value'; });
+      const emailVal = (typeof formData !== 'undefined' && formData && formData.email) ? formData.email : '';
+    %>
+
+    <main class="min-h-screen grid place-items-center px-4 py-10">
+      <div class="w-full max-w-md">
+        <% if (flash && flash.success && flash.success.length) { %>
+          <div class="mb-4 rounded bg-green-100 border border-green-300 px-4 py-2 text-green-800" role="status">
+            <%= flash.success[0] %>
+          </div>
+        <% } %>
+        <% if (flash && flash.error && flash.error.length) { %>
+          <div class="mb-4 rounded bg-red-100 border border-red-300 px-4 py-2 text-red-800" role="alert">
+            <%= flash.error[0] %>
+          </div>
+        <% } %>
+
+        <section class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <header class="mb-6 text-center">
+            <h1 class="text-2xl font-bold tracking-tight">Create your account</h1>
+            <p class="mt-1 text-sm text-gray-600">Sign up to start logging your books.</p>
+          </header>
+
+          <form action="/signup" method="POST" novalidate class="space-y-5" aria-label="Signup form">
+            <div>
+              <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                inputmode="email"
+                autocomplete="email"
+                required
+                aria-required="true"
+                aria-invalid="<%= errMap.email ? 'true' : 'false' %>"
+                aria-describedby="<%= errMap.email ? 'email-error' : '' %>"
+                placeholder="you@example.com"
+                value="<%= emailVal %>"
+                class="mt-1 block w-full rounded-md border <%= errMap.email ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500' %> shadow-sm"
+              />
+              <% if (errMap.email) { %>
+                <p id="email-error" class="mt-2 text-sm text-red-600"><%= errMap.email %></p>
+              <% } else { %>
+                <p class="mt-2 text-xs text-gray-500">We'll never share your email.</p>
+              <% } %>
+            </div>
+
+            <div>
+              <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autocomplete="new-password"
+                required
+                aria-required="true"
+                aria-invalid="<%= errMap.password ? 'true' : 'false' %>"
+                aria-describedby="<%= errMap.password ? 'password-error' : '' %>"
+                placeholder="Enter a strong password"
+                class="mt-1 block w-full rounded-md border <%= errMap.password ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500' %> shadow-sm"
+              />
+              <% if (errMap.password) { %>
+                <p id="password-error" class="mt-2 text-sm text-red-600"><%= errMap.password %></p>
+              <% } else { %>
+                <p class="mt-2 text-xs text-gray-500">At least 8 characters recommended.</p>
+              <% } %>
+            </div>
+
+            <div class="pt-2">
+              <button type="submit" class="w-full inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition">
+                Create account
+              </button>
+            </div>
+          </form>
+
+          <p class="mt-6 text-center text-sm text-gray-700">
+            Already have an account?
+            <a href="/login" class="font-medium text-indigo-600 hover:text-indigo-500">Log in</a>
+          </p>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      // Optional: auto-fade flash messages
+      setTimeout(() => {
+        const success = document.querySelector('[role="status"]');
+        const error = document.querySelector('[role="alert"]');
+        [success, error].forEach(el => {
+          if (!el) return;
+          el.classList.add('transition-opacity', 'duration-700');
+          el.style.opacity = '0';
+          setTimeout(() => { el.style.display = 'none'; }, 700);
+        });
+      }, 5000);
+    </script>
+  </body>
+</html>
+
