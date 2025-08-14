@@ -15,7 +15,7 @@
         : [];
       const errMap = {};
       (errs || []).forEach(e => { if (e && e.param) errMap[e.param] = e.msg || 'Invalid value'; });
-      const emailVal = (typeof formData !== 'undefined' && formData && formData.email) ? formData.email : '';
+      const usernameVal = (typeof formData !== 'undefined' && formData && formData.username) ? formData.username : '';
     %>
 
     <main class="min-h-screen grid place-items-center px-4 py-10">
@@ -39,25 +39,24 @@
 
           <form action="/signup" method="POST" novalidate class="space-y-5" aria-label="Signup form">
             <div>
-              <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+              <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
               <input
-                id="email"
-                name="email"
-                type="email"
-                inputmode="email"
-                autocomplete="email"
+                id="username"
+                name="username"
+                type="text"
+                autocomplete="username"
                 required
                 aria-required="true"
-                aria-invalid="<%= errMap.email ? 'true' : 'false' %>"
-                aria-describedby="<%= errMap.email ? 'email-error' : '' %>"
-                placeholder="you@example.com"
-                value="<%= emailVal %>"
-                class="mt-1 block w-full rounded-md border <%= errMap.email ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500' %> shadow-sm"
+                aria-invalid="<%= errMap.username ? 'true' : 'false' %>"
+                aria-describedby="<%= errMap.username ? 'username-error' : '' %>"
+                placeholder="your_username"
+                value="<%= usernameVal %>"
+                class="mt-1 block w-full rounded-md border <%= errMap.username ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500' %> shadow-sm"
               />
-              <% if (errMap.email) { %>
-                <p id="email-error" class="mt-2 text-sm text-red-600"><%= errMap.email %></p>
+              <% if (errMap.username) { %>
+                <p id="username-error" class="mt-2 text-sm text-red-600"><%= errMap.username %></p>
               <% } else { %>
-                <p class="mt-2 text-xs text-gray-500">We'll never share your email.</p>
+                <p class="mt-2 text-xs text-gray-500">Pick a unique username.</p>
               <% } %>
             </div>
 
