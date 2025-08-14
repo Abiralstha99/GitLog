@@ -19,6 +19,7 @@ router.get("/new", renderNewForm);
 router.get("/edit/:id", renderCurrentForm);
 router.get('/signup', getSignUp);
 router.post('/signup', signUp);
+router.get('/login', (req, res) => res.render('login'));
 router.post('/login', login);
 
 // Protected routes (JWT required)
