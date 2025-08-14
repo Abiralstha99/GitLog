@@ -4,6 +4,9 @@ import booksRouter from './routes/booksRouter.js';
 import session from 'express-session';
 import flash from 'connect-flash';
 import { authenticateJWT } from './controllers/authenticate.js';
+import bcrypt from 'bcrypt';
+import pool from './model/model.js';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 const PORT = 3000;
@@ -27,6 +30,7 @@ app.use(flash());
 // Middleware to protect routes
 // Make sure to import or define authenticateJWT above
 app.use(authenticateJWT);
+app.use(cookieParser());
 
 app.use((req, res, next) => {
   res.locals.flash = req.flash();
