@@ -3,6 +3,7 @@ import 'dotenv/config.js';
 import booksRouter from './routes/booksRouter.js';
 import session from 'express-session';
 import flash from 'connect-flash';
+import { authenticateJWT } from './controllers/authenticate.js';
 
 const app = express();
 const PORT = 3000;
@@ -23,6 +24,9 @@ app.use(session({
 // now after I entered the session using secret now I can use flash
 app.use(flash());
 
+// Middleware to protect routes
+// Make sure to import or define authenticateJWT above
+app.use(authenticateJWT);
 
 app.use((req, res, next) => {
   res.locals.flash = req.flash();
