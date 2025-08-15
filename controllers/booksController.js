@@ -22,31 +22,48 @@ async function renderNewForm(req, res) {
 
 async function postBook(req, res) {
   try {
+    // Require auth at controller level (defense-in-depth)
+    if (!req.user) {
+      req.flash('error', 'Please log in to add a book.');
+      return res.redirect('/login');
+    }
+
     const { title, author, rating, read_date, notes, cover_id } = req.body;
     if (!title) {
-      return res.status(400).send("Book title is required");
+      req.flash('error', 'Book title is required.');
+      return res.redirect('/new');
     }
+    // Save the book with the logged-in user's ID
     await pool.query(
-      "INSERT INTO books (title, author, rating, read_date, notes, cover_id) VALUES ($1, $2, $3, $4, $5, $6)",
-      [title, author, rating, read_date, notes, cover_id]
+      'INSERT INTO books (title, author, rating, read_date, notes, cover_id, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+      [title, author, rating, read_date, notes, cover_id, req.user.id]
     );
     req.flash('success', 'Book added successfully!');
     res.redirect('/');
   } catch (error) {
     console.error("Error adding new book:", error);
-    res.status(500).send("Sorry, we couldn't add your book. Please try again.");
+    req.flash('error', "Sorry, we couldn't add your book. Please try again.");
+    res.redirect('/new');
   }
 }
 
 async function deleteBook(req, res) {
   try {
+    // Require auth at controller level (defense-in-depth)
+    if (!req.user) {
+      req.flash('error', 'Please log in to delete a book.');
+      return res.redirect('/login');
+    }
     const id = req.params.id;
-    await pool.query("DELETE FROM books WHERE id = $1", [id]);
+
+    // Optional: ensure the book belongs to the logged-in user (tenancy safety)
+    await pool.query("DELETE FROM books WHERE id = $1 AND user_id = $2", [id, req.user.id]);
     req.flash('error', 'Book deleted successfully!');
     res.redirect('/');
   } catch (error) {
     console.error(`Error deleting book with ID ${req.params.id}:`, error);
-    res.status(500).send("Sorry, we couldn't delete this book. Please try again.");
+    req.flash('error', "Sorry, we couldn't delete this book. Please try again.");
+    res.redirect('/');
   }
 }
 
@@ -70,17 +87,25 @@ async function renderCurrentForm(req, res) {
 
 async function updateBook(req, res) {
   try {
+    // Require auth at controller level (defense-in-depth)
+    if (!req.user) {
+      req.flash('error', 'Please log in to update a book.');
+      return res.redirect('/login');
+    }
+
     const id = req.params.id;
     const { title, author, rating, read_date, notes, cover_id } = req.body;
     // Extracting the book data cause the data contains additional info related to the row in our database
     await pool.query(
-      "UPDATE books SET title = $1, author = $2, rating = $3, read_date = $4, notes = $5, cover_id = $6 WHERE id = $7",
-      [title, author, rating, read_date, notes, cover_id, id]
+      "UPDATE books SET title = $1, author = $2, rating = $3, read_date = $4, notes = $5, cover_id = $6 WHERE id = $7 AND user_id = $8",
+      [title, author, rating, read_date, notes, cover_id, id, req.user.id]
     );
+    req.flash('success', 'Book updated successfully!');
     res.redirect("/");
   } catch (error) {
     console.error(`Error updating book with ID ${req.params.id}:`, error);
-    res.status(500).send("Sorry, we couldn't update this book. Please try again.");
+    req.flash('error', "Sorry, we couldn't update this book. Please try again.");
+    res.redirect(`/edit/${req.params.id}`);
   }
 }
 
