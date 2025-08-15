@@ -9,7 +9,7 @@ import {
 } from "../controllers/booksController.js";
 
 import { getSignUp, signUp } from "../controllers/signUp.js";
-import { login, logout, authenticateJWT } from '../controllers/authenticate.js';
+import { login, logout, authenticateJWT,profile } from '../controllers/authenticate.js';
 
 const router = express.Router();
 
@@ -30,4 +30,5 @@ router.post('/edit/:id', authenticateJWT, updateBook);
 // Logout route: use controller to clear JWT cookie and redirect with flash message
 router.post('/logout', logout);
 
+router.get('/profile',authenticateJWT, profile);
 export default router;
