@@ -4,6 +4,7 @@ import booksRouter from './routes/booksRouter.js';
 import session from 'express-session';
 import flash from 'connect-flash';
 import cookieParser from 'cookie-parser';
+import jwt from 'jsonwebtoken';
 
 const app = express();
 const PORT = 3000;
@@ -14,6 +15,8 @@ if (!process.env.ACCESS_TOKEN_SECRET) {
 }
 
 app.set('view engine', 'ejs');
+app.use(express.static('public'));
+
 // middlewares
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
@@ -32,12 +35,24 @@ app.use(session({
 // now after I entered the session using secret now I can use flash
 app.use(flash());
 
-// Do not apply authenticateJWT globally; protect only specific routes in the router
 
+// Make current user available to views if a valid JWT cookie exists
 app.use((req, res, next) => {
-  res.locals.flash = req.flash();
-  next();
+  const token = req.cookies?.token;
+  if (!token) {
+    res.locals.flash = req.flash();
+    return next();
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+    res.locals.flash = req.flash();
+    if (!err && user) {
+      req.user = user;
+      res.locals.user = user;
+    }
+    next();
+  });
 });
+
 // routes
 console.log({
   user: process.env.DB_USER,

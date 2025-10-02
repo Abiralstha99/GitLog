@@ -3,9 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Book Log</title>
+    <title>BookLog</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
     <link rel="stylesheet" href="/style.css" />
+    <link rel="icon" type="image/svg+xml" href="/images/library_books.svg">
   </head>
 
   <body class="bg-gray-50 text-gray-900 antialiased">
@@ -36,6 +37,11 @@
           <a href="/new" class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition">
             Add New Book
           </a>
+          <% if (typeof user !== 'undefined' && user) { %>
+            <a href="/profile" class="inline-flex items-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition" aria-label="Go to your profile">
+              Profile
+            </a>
+          <% } %>
         </div>
       </div>
 

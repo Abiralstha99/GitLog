@@ -79,23 +79,25 @@ async function authenticateJWT(req, res, next) {
 async function profile(req, res) {
   try {
     const userId = req.user?.id;
+    console.log("Profile - req.user:", req.user); // Debug: check user info
+    console.log("Profile - userId:", userId); // Debug: check userId
     if (!userId) {
       req.flash("error", "Please log in to view your profile.");
       return res.redirect("/login");
     }
-      const { rows } = await pool.query(
-        `SELECT id, title, author, rating, notes, cover_id, user_id
+    const { rows } = await pool.query(
+      `SELECT id, title, author, rating, notes, cover_id, user_id
        FROM books
        WHERE user_id = $1
        ORDER BY id DESC`,
-        [userId]
-      );
-      res.render('profile', { user: req.user, books: rows || [] })
-    }
-    catch (error) {
-    console.error('Profile error:', error);
-    req.flash('error', 'Could not load your profile.');
-    res.redirect('/');
+      [userId]
+    );
+    console.log("Profile - books found:", rows); // Debug: check what books are returned
+    res.render("profile", { user: req.user, books: rows || [] });
+  } catch (error) {
+    console.error("Profile error:", error);
+    req.flash("error", "Could not load your profile.");
+    res.redirect("/");
   }
 }
 export { login, logout, authenticateJWT, profile };
