@@ -22,7 +22,7 @@ router.post('/signup', signUp);
 router.get('/login', (req, res) => res.render('login'));
 router.post('/login', login);
 
-// Protected routes (JWT required)
+// Protected routes (JWT required) // Do not apply authenticateJWT globally; protect only specific routes in the router
 router.post("/new", authenticateJWT, postBook);
 router.post("/delete/:id", authenticateJWT, deleteBook);
 router.post('/edit/:id', authenticateJWT, updateBook);
