@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import pool from "../model/model.js";
+import prisma from "../prisma/prismaClient";
+import { equal } from "assert";
 
 async function login(req, res) {
   try {
@@ -10,11 +11,22 @@ async function login(req, res) {
       return res.redirect("/login");
     }
     const uname = username.trim().toLowerCase();
-    const result = await pool.query(
-      "SELECT * FROM users WHERE LOWER(username) = $1 LIMIT 1",
-      [uname]
-    );
-    const user = result.rows[0];
+
+    // const result = await pool.query(
+    //   "SELECT * FROM users WHERE LOWER(username) = $1 LIMIT 1",
+    //   [uname]
+    // );
+
+    // Now in prisma findFirst
+    const user = await prisma.users.findFirst({
+      where: {
+        username: {
+          equals: uname,
+          mode: 'insensitive'
+        }
+      },
+    });
+
     if (!user) {
       req.flash("error", "Invalid username or password.");
       return res.redirect("/login");
@@ -85,13 +97,25 @@ async function profile(req, res) {
       req.flash("error", "Please log in to view your profile.");
       return res.redirect("/login");
     }
-    const { rows } = await pool.query(
-      `SELECT id, title, author, rating, notes, cover_id, user_id
-       FROM books
-       WHERE user_id = $1
-       ORDER BY id DESC`,
-      [userId]
-    );
+
+    // const { rows } = await pool.query(
+    //   `SELECT id, title, author, rating, notes, cover_id, user_id
+    //    FROM books
+    //    WHERE user_id = $1
+    //    ORDER BY id DESC`,
+    //   [userId]
+    // );
+
+    // Now in prisma findMany with built-in ordering
+    const books = await prisma.books.findMany({
+      where: {
+        user_id: userId
+      },
+      orderBy: {
+        id: 'desc'
+      }
+    });
+
     console.log("Profile - books found:", rows); // Debug: check what books are returned
     res.render("profile", { user: req.user, books: rows || [] });
   } catch (error) {
