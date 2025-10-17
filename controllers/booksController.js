@@ -1,24 +1,28 @@
-import pool from "../model/model.js";
+import prisma from "../prisma/prismaClient.js";
 
 async function getBooks(req, res) {
   try {
     const userId = req.user?.id;
-    
+
     if (!userId) {
       // If not logged in, redirect to signup page
-      return res.redirect('/signup');
+      return res.redirect("/signup");
     }
 
-    const result = await pool.query(
-      "SELECT * FROM books WHERE user_id = $1 ORDER BY id DESC",
-      [userId]
-    );
-
-    const books = result.rows;
+    const books = await prisma.books.findMany({
+      where: {
+        user_id: userId,
+      },
+      orderBy: {
+        id: "desc",
+      },
+    });
     res.render("index", { books });
   } catch (error) {
     console.error("Error fetching books:", error);
-    res.status(500).send("Sorry, we couldn't load your book list. Please try again later.");
+    res
+      .status(500)
+      .send("Sorry, we couldn't load your book list. Please try again later.");
   }
 }
 
@@ -42,15 +46,23 @@ async function postBook(req, res) {
     }
 
     const { title, author, rating, read_date, notes, cover_id } = req.body;
+
     if (!title) {
       req.flash("error", "Book title is required.");
       return res.redirect("/new");
     }
-    // Save the book with the logged-in user's ID
-    await pool.query(
-      "INSERT INTO books (title, author, rating, read_date, notes, cover_id, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7)",
-      [title, author, rating, read_date, notes, cover_id, req.user.id]
-    );
+
+    await prisma.books.create({
+      data: {
+        title,
+        author,
+        rating: rating ? parseInt(rating) : null, // Convert to number if provided
+        read_date: read_date ? new Date(read_date) : null, // Convert to Date if provided
+        notes,
+        cover_id,
+        user_id: req.user.id,
+      },
+    });
     req.flash("success", "Book added successfully!");
     res.redirect("/");
   } catch (error) {
@@ -70,10 +82,12 @@ async function deleteBook(req, res) {
     const id = req.params.id;
 
     // Optional: ensure the book belongs to the logged-in user (tenancy safety)
-    await pool.query("DELETE FROM books WHERE id = $1 AND user_id = $2", [
-      id,
-      req.user.id,
-    ]);
+    await prisma.books.delete({
+      where: {
+        id: id,
+        user_id: req.user.id, // Ensures user can only delete their own books
+      },
+    });
     req.flash("error", "Book deleted successfully!");
     res.redirect("/");
   } catch (error) {
@@ -89,10 +103,11 @@ async function deleteBook(req, res) {
 async function renderCurrentForm(req, res) {
   try {
     const currentBookId = req.params.id;
-    const data = await pool.query("SELECT * FROM books WHERE id = $1", [
-      currentBookId,
-    ]);
-    const book = data.rows[0];
+    const book = await prisma.books.findUnique({
+      where: {
+        id: currentBookId,
+      },
+    });
 
     if (!book) {
       return res.status(404).send("Book not found");
@@ -121,10 +136,20 @@ async function updateBook(req, res) {
     const id = req.params.id;
     const { title, author, rating, read_date, notes, cover_id } = req.body;
     // Extracting the book data cause the data contains additional info related to the row in our database
-    await pool.query(
-      "UPDATE books SET title = $1, author = $2, rating = $3, read_date = $4, notes = $5, cover_id = $6 WHERE id = $7 AND user_id = $8",
-      [title, author, rating, read_date, notes, cover_id, id, req.user.id]
-    );
+    await prisma.books.update({
+      where: {
+        id: id,
+        user_id: req.user.id, // Ensures user can only update their own books
+      },
+      data: {
+        title,
+        author,
+        rating: rating ? parseInt(rating) : null,
+        read_date: read_date ? new Date(read_date) : null,
+        notes,
+        cover_id,
+      },
+    });
     req.flash("success", "Book updated successfully!");
     res.redirect("/");
   } catch (error) {
